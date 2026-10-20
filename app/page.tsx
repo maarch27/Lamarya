@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
-  NAME, FIRST_NAME, ROLE, BASED, EMAIL, SOCIAL, PHOTOS, HERO_CAPTIONS, HEADLINE, BADGES, STATS,
-  ABOUT_TITLE, ABOUT_TEXT, SKILLS, NOTES, CATS, REELS, BRANDS, SERVICES, STEPS, QUOTES, PROJECT_TYPES,
-  type Cat, type Reel, type SocialIcon,
+  NAME, FIRST_NAME, ROLE, BASED, NICHES, EMAIL, INSTAGRAM, SOCIAL, PHOTOS, HEADLINE, BADGES, STATS,
+  ABOUT_TITLE, ABOUT_TEXT, SKILLS, NOTES, NOTES_TITLE, CATS, REELS, BRANDS, SERVICES, STEPS, QUOTES,
+  PROJECT_TYPES, HIGHLIGHTS, type Cat, type Reel, type SocialIcon,
 } from "./content";
 
 const P = (n: string) => "/image/" + encodeURIComponent(n);
@@ -13,50 +13,45 @@ const igUrl = (r: Reel) => `https://www.instagram.com/${r.type === "p" ? "p" : "
 /* =====================================================================
    SMALL PIECES
    ===================================================================== */
-function Photo({ src, alt, pos, eager, label = "photo coming", onLoad }: { src?: string; alt: string; pos?: string; eager?: boolean; label?: string; onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void }) {
+function Photo({ src, alt, pos, eager, label = "photo coming" }: { src?: string; alt: string; pos?: string; eager?: boolean; label?: string }) {
   const [bad, setBad] = useState(false);
   if (!src || bad) return <span className="ph" role="img" aria-label={alt}><Heart /><span>{label}</span></span>;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={P(src)} alt={alt} style={pos ? { objectPosition: pos } : undefined} loading={eager ? "eager" : "lazy"} onError={() => setBad(true)} onLoad={onLoad} />;
-}
-
-function Polaroid({ src, alt, caption, className = "", eager }: { src?: string; alt: string; caption?: string; className?: string; eager?: boolean }) {
-  return (
-    <figure className={`pola ${className}`}>
-      <span className="tape" aria-hidden="true" />
-      <div className="pola-img"><Photo src={src} alt={alt} eager={eager} /></div>
-      {caption && <figcaption>{caption}</figcaption>}
-    </figure>
-  );
+  return <img src={P(src)} alt={alt} style={pos ? { objectPosition: pos } : undefined} loading={eager ? "eager" : "lazy"} onError={() => setBad(true)} />;
 }
 
 function Heart({ className = "" }: { className?: string }) {
   return <svg className={`heart ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.1 4c2 0 3.6 1.1 4.9 2.9C13.3 5.1 14.9 4 16.9 4c3.5 0 5.7 3.6 4.4 7.1-1.8 4.8-9.3 9.4-9.3 9.4z" /></svg>;
 }
 
-function Bow({ className = "" }: { className?: string }) {
+function Spark({ className = "" }: { className?: string }) {
+  return <svg className={`spark ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5.6 4.9 9.9 10.5 10.5-5.6.6-9.9 4.9-10.5 10.5C11.4 16.9 7.1 12.6 1.5 12 7.1 11.4 11.4 7.1 12 1.5z" /></svg>;
+}
+
+/* A caption written the way she writes on her reels:
+   handwritten line on top, big bold caps, italic "part" underneath. */
+function Caption({ top, big, part, as: Tag = "h2", className = "" }: { top?: string; big: string; part?: string; as?: "h1" | "h2" | "h3"; className?: string }) {
   return (
-    <svg className={`bow ${className}`} viewBox="0 0 120 90" aria-hidden="true">
-      <path d="M60 38 C44 18 14 8 8 22 C3 34 22 50 60 44 Z" />
-      <path d="M60 38 C76 18 106 8 112 22 C117 34 98 50 60 44 Z" />
-      <path d="M56 44 C50 60 40 74 30 86 L44 84 L50 90 C56 76 60 62 60 48 Z" />
-      <path d="M64 44 C70 60 80 74 90 86 L76 84 L70 90 C64 76 60 62 60 48 Z" />
-      <ellipse cx="60" cy="41" rx="9" ry="8" />
-    </svg>
+    <Tag className={`cap ${className}`}>
+      {top && <span className="cap-top">{top}</span>}
+      <span className="cap-big">{big}</span>
+      {part && <span className="cap-part">{part}</span>}
+    </Tag>
   );
 }
 
-function Sticker({ text, className = "" }: { text: string; className?: string }) {
-  const id = `c-${className.replace(/\W/g, "")}`;
+function Head({ part, top, big, text }: { part: string; top: string; big: string; text?: string }) {
   return (
-    <div className={`sticker ${className}`} aria-hidden="true">
-      <svg viewBox="0 0 120 120">
-        <defs><path id={id} d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" /></defs>
-        <text><textPath href={`#${id}`} textLength="272" lengthAdjust="spacing">{text}</textPath></text>
-      </svg>
-      <Heart />
+    <div className="head rv">
+      <Caption top={top} big={big} part={part} />
+      {text && <p className="head-p">{text}</p>}
     </div>
   );
+}
+
+/* Story progress bars, like the top of an Instagram story */
+function Bars({ n = 3, active = 0 }: { n?: number; active?: number }) {
+  return <span className="bars" aria-hidden="true">{Array.from({ length: n }, (_, i) => <i key={i} className={i < active ? "done" : i === active ? "now" : ""} />)}</span>;
 }
 
 function Icon({ name }: { name: SocialIcon }) {
@@ -75,16 +70,6 @@ function Socials({ className }: { className: string }) {
         <li key={s.name}><a href={s.url} target={s.icon === "mail" ? undefined : "_blank"} rel="noreferrer" aria-label={s.name}><Icon name={s.icon} /><span>{s.name}</span></a></li>
       ))}
     </ul>
-  );
-}
-
-function Head({ no, title, accent, text }: { no: string; title: string; accent: string; text?: string }) {
-  return (
-    <div className="head rv">
-      <p className="kicker"><Heart /> {no}</p>
-      <h2>{title} <em>{accent}</em></h2>
-      {text && <p className="head-p">{text}</p>}
-    </div>
   );
 }
 
@@ -127,16 +112,15 @@ export default function Home() {
   // gentle reveal on scroll
   useEffect(() => {
     document.documentElement.classList.add("js");
-    const els = Array.from(document.querySelectorAll(".rv"));
+    const els = Array.from(document.querySelectorAll(".rv:not(.in)"));
     if (!("IntersectionObserver" in window)) { els.forEach((e) => e.classList.add("in")); return; }
-    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.1 });
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.08 });
     els.forEach((e) => io.observe(e));
     return () => io.disconnect();
-  }, [files.length]);
+  }, [files.length, cat]);
 
   const used = new Set<string>([...PHOTOS.hero, PHOTOS.about, ...PHOTOS.notes, ...REELS.map((r) => r.cover ?? "")].filter(Boolean));
   const gallery = files.filter((n) => !used.has(n));
-  const galleryItems: (string | null)[] = gallery.length ? gallery : Array.from({ length: 8 }, () => null);
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
@@ -153,116 +137,127 @@ export default function Home() {
     const body = `Name: ${f.name}\nEmail: ${f.email}\nBrand / company: ${f.brand}\nProject type: ${f.type}\n\nProject details:\n${f.details}`;
     window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Collaboration enquiry: " + f.brand)}&body=${encodeURIComponent(body)}`;
   };
-  const nav: [string, string][] = [["#about", "About"], ["#work", "Work"], ["#services", "Services"], ["#book", "Book"], ["#contact", "Contact"]];
+  const nav: [string, string][] = [["#about", "About"], ["#work", "Work"], ["#services", "Services"], ["#love", "Reviews"], ["#book", "Book"]];
 
   return (
     <main className="site">
       <header className="top">
-        <a href="#home" className="logo">{NAME}<Heart /></a>
+        <a href="#home" className="logo"><span className="logo-s">Dr.</span>Lamarya<Spark /></a>
         <nav aria-label="Main" className={menu ? "open" : ""}>
           {nav.map(([h, t]) => <a key={h} href={h} onClick={() => setMenu(false)}>{t}</a>)}
         </nav>
-        <a className="pill" href="#contact">Work with me</a>
+        <a className="pill" href="#contact">Collab with me</a>
         <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><span /><span /></button>
       </header>
 
       {/* HERO */}
       <section className="hero" id="home">
         <div className="hero-copy">
-          <p className="hello">hello, gorgeous brands</p>
-          <h1><span>{NAME}</span><Bow className="h1-bow" /></h1>
-          <p className="role">{ROLE} <i>·</i> {BASED}</p>
+          <p className="role">{ROLE}</p>
+          <Caption as="h1" top="Welcome to" big={NAME} part="your favorite creator" className="hero-cap" />
           <p className="lede">{HEADLINE}</p>
+          <ul className="niches">{NICHES.map((n) => <li key={n}>{n}</li>)}</ul>
           <div className="actions">
             <a className="btn" href="#contact">Let&apos;s collaborate</a>
-            <a className="btn ghost" href="#work">See my work</a>
+            <a className="btn ghost" href="#work">Watch my work</a>
           </div>
-          <ul className="badges">{BADGES.map((b) => <li key={b}><Heart /> {b}</li>)}</ul>
+          <p className="based"><span aria-hidden="true">📍</span> {BASED}</p>
         </div>
+
         <div className="hero-art">
-          <Polaroid className="p1" src={PHOTOS.hero[0]} alt={`${FIRST_NAME}, main photo`} caption={HERO_CAPTIONS[0]} eager />
-          <Polaroid className="p2" src={PHOTOS.hero[1]} alt={`${FIRST_NAME}, photo 2`} caption={HERO_CAPTIONS[1]} eager />
-          <Polaroid className="p3" src={PHOTOS.hero[2]} alt={`${FIRST_NAME}, photo 3`} caption={HERO_CAPTIONS[2]} eager />
-          <Sticker className="st-hero" text="booked worldwide ♥ brand fave ♥ " />
-          <Heart className="float h1f" /><Heart className="float h2f" /><Heart className="float h3f" />
+          <div className="story back" aria-hidden="true">
+            <Photo src={PHOTOS.hero[1]} alt="" eager pos="center 25%" />
+          </div>
+          <div className="story main">
+            <Bars n={3} active={1} />
+            <span className="story-user"><span className="av"><Photo src={PHOTOS.hero[2]} alt="" eager /></span>dr.lamarya <small>· Paris</small></span>
+            <Photo src={PHOTOS.hero[0]} alt={`${FIRST_NAME}, ${ROLE}`} eager pos="center 30%" />
+            <span className="story-cap"><span className="cap-top">Glow up with</span><span className="cap-big">your brand</span></span>
+          </div>
+          <span className="chip c1"><Heart /> {BADGES[0]}</span>
+          <span className="chip c2"><Spark /> {BADGES[1]}</span>
+          <Spark className="tw t1" /><Spark className="tw t2" /><Spark className="tw t3" />
         </div>
       </section>
 
-      <div className="ribbon" aria-label="Brands I have worked with">
-        <div className="ribbon-row">{[...BRANDS, ...BRANDS, ...BRANDS].map((b, i) => <span key={i}>{b}<Heart /></span>)}</div>
-      </div>
+      {/* HIGHLIGHTS */}
+      <nav className="highlights" aria-label="Highlights">
+        <ul>{HIGHLIGHTS.map(([t, img, href]) => (
+          <li key={t}><a href={href}><span className="ring"><span className="hl-img"><Photo src={img} alt="" pos="center 25%" /></span></span><span>{t}</span></a></li>
+        ))}</ul>
+      </nav>
 
       {/* ABOUT */}
       <section className="about" id="about">
         <div className="about-art rv">
-          <Polaroid className="pa" src={PHOTOS.about} alt={`Portrait of ${FIRST_NAME}`} caption="that's me ♥" />
-          <Bow className="about-bow" />
+          <div className="frame-soft"><Photo src={PHOTOS.about} alt={`Portrait of ${FIRST_NAME}`} pos="center 30%" /></div>
+          <span className="tag-hand">{`that's me ✨`}</span>
         </div>
         <div className="about-copy rv">
-          <p className="kicker"><Heart /> 01 · About</p>
-          <h2>{ABOUT_TITLE} <em>{FIRST_NAME}.</em></h2>
+          <Caption top={ABOUT_TITLE} big={FIRST_NAME} part="Part 1 · about me" />
           {ABOUT_TEXT.map((t) => <p key={t}>{t}</p>)}
           <ul className="skills">{SKILLS.map((s) => <li key={s}>{s}</li>)}</ul>
         </div>
       </section>
 
       <section className="stats" aria-label="In numbers">
-        <ul>{STATS.map(([v, l], i) => <li key={l} className={`rv s${i}`}><b>{v}</b><span>{l}</span></li>)}</ul>
+        <ul>{STATS.map(([v, l]) => <li key={l} className="rv"><b>{v}</b><span>{l}</span></li>)}</ul>
       </section>
 
-      {/* LITTLE THINGS */}
-      <section className="notes">
-        <Head no="02 · The girl behind the camera" title="Little things" accent="about me." />
-        <div className="notes-grid">
-          <div className="notes-photos rv">
-            <Polaroid className="pn1" src={PHOTOS.notes[0]} alt={`${FIRST_NAME}, lifestyle photo`} />
-            <Polaroid className="pn2" src={PHOTOS.notes[1]} alt={`${FIRST_NAME}, behind the scenes`} />
+      {/* WHY ME */}
+      <section className="why">
+        <Head part="Part 2" top={NOTES_TITLE[0]} big={NOTES_TITLE[1]} />
+        <div className="why-grid">
+          <div className="why-photos rv">
+            <div className="frame-soft w1"><Photo src={PHOTOS.notes[0]} alt={`${FIRST_NAME} in Paris`} /></div>
+            <div className="frame-soft w2"><Photo src={PHOTOS.notes[1]} alt={`${FIRST_NAME} at golden hour`} /></div>
           </div>
-          <ul className="note-cards">
-            {NOTES.map(([t, d], i) => <li key={t} className={`rv n${i}`}><span className="pin" aria-hidden="true" /><h3>{t}</h3><p>{d}</p></li>)}
-          </ul>
+          <ol className="why-list">
+            {NOTES.map(([t, d], i) => <li key={t} className="rv"><span className="why-n">0{i + 1}</span><div><h3>{t}</h3><p>{d}</p></div></li>)}
+          </ol>
         </div>
       </section>
 
       {/* WORK */}
       <section className="work" id="work">
-        <Head no="03 · Campaigns" title="Pick a mood," accent="press play." text="Choose a category and watch real campaigns straight from Instagram." />
+        <Head part="Part 3" top="Press play on" big="my edits" text="Hooks, storytelling and series that keep people watching: glow ups, try-ons, unboxings and before and afters." />
         <div className="tabs" role="tablist">
           {CATS.map((c) => <button key={c} role="tab" aria-selected={cat === c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>{c}</button>)}
         </div>
         <div className="reels" key={cat}>
-          {world.length
-            ? world.map((r) => (
-              <button key={r.id} className="reel" onClick={() => setReel(r)} aria-label={`Play ${r.title}`}>
-                <span className="reel-img"><Photo src={r.cover} alt="" label={r.title} /></span>
-                <span className="reel-play" aria-hidden="true">▶</span>
-                <span className="reel-t">{r.title}</span>
-              </button>))
-            : Array.from({ length: 4 }, (_, i) => (
-              <div key={i} className="reel soon"><span className="reel-img"><Photo alt="" label={`${cat} reel coming`} /></span><span className="reel-t">{cat} campaign</span></div>
-            ))}
+          {world.map((r, i) => {
+            const inner = (<>
+              <span className="reel-img"><Photo src={r.cover} alt="" label={r.title} pos="center 30%" /></span>
+              <Bars n={Math.min(4, world.length)} active={Math.min(i, 3)} />
+              <span className="reel-play" aria-hidden="true">▶</span>
+              <span className="reel-t"><span className="cap-top">{r.cat}</span>{r.title}</span>
+            </>);
+            return r.id
+              ? <button key={r.title} className="reel" onClick={() => setReel(r)} aria-label={`Play ${r.title}`}>{inner}</button>
+              : <a key={r.title} className="reel" href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label={`${r.title}, see it on Instagram`}>{inner}</a>;
+          })}
         </div>
       </section>
 
       {/* GALLERY */}
       <section className="gallery" id="gallery">
-        <Head no="04 · Scrapbook" title="My creative" accent="world." text="Photos from shoots, campaigns and everyday moments. Tap one to see it bigger." />
-        <div className="scrap">
-          {galleryItems.map((n, i) => n
-            ? <button key={n} className={`sc sc${i % 5}`} onClick={() => setLb(i)} aria-label="Open photo"><span className="tape" aria-hidden="true" /><Photo src={n} alt={`${FIRST_NAME} portfolio photo`} /></button>
-            : <div key={i} className={`sc sc${i % 5}`}><span className="tape" aria-hidden="true" /><Photo alt="" /></div>)}
+        <Head part="Part 4" top="Photo dump," big="Paris edition" text="UGC photos from everyday moments at home to outdoor adventures. Tap one to see it bigger." />
+        <div className="dump">
+          {gallery.map((n, i) => (
+            <button key={n} className={`dp dp${i % 6}`} onClick={() => setLb(i)} aria-label="Open photo"><Photo src={n} alt={`${FIRST_NAME}, UGC photo`} /></button>
+          ))}
         </div>
       </section>
 
       {/* BRANDS */}
-      <section className="brands">
-        <Head no="05 · Brands" title="Brands that" accent="trust me." />
-        <ul className="stamps">{BRANDS.map((b, i) => <li key={b + i} className="rv"><span>{b}</span></li>)}</ul>
+      <section className="brands" id="brands">
+        <Head part="Part 5" top="Trusted by" big="100+ brands" />
+        <ul className="brand-cloud">{BRANDS.map((b, i) => <li key={b} className={`rv b${i % 4}`}>{b}</li>)}</ul>
       </section>
 
       {/* SERVICES */}
       <section className="services" id="services">
-        <Head no="06 · Services" title="What I can" accent="create for you." text="Every package is shaped around your goal and usage rights. Tell me what you need and I'll send a tailored quote." />
+        <Head part="Part 6" top="What I" big="create" text="Raw and edited content for ads, brand and organic use. Tell me your goal and I'll send a tailored quote." />
         <ul className="svc">
           {SERVICES.map(([t, d], i) => (
             <li key={t} className="rv">
@@ -273,20 +268,23 @@ export default function Home() {
           ))}
         </ul>
         <div className="steps rv">
-          <h3>How we work <em>together</em></h3>
+          <Caption as="h3" top="my" big="approach" />
           <ol>{STEPS.map(([t, d], i) => <li key={t}><b>{i + 1}</b><h4>{t}</h4><p>{d}</p></li>)}</ol>
         </div>
       </section>
 
-      {/* LOVE NOTES */}
-      <section className="love">
-        <Head no="07 · Kind words" title="Love notes" accent="from brands." />
-        <div className="letters">
+      {/* LOVE NOTES (as DMs) */}
+      <section className="love" id="love">
+        <Head part="Part 7" top="What brands" big="tell me" text="Real messages from brands after we worked together." />
+        <div className="dms">
           {QUOTES.map((x, i) => (
-            <figure key={i} className={`letter rv l${i % 3}`}>
-              <Heart className="seal" />
-              <blockquote>{x.q}</blockquote>
-              <figcaption>with love, {x.by}</figcaption>
+            <figure key={x.by} className={`dm rv ${i % 2 ? "r" : ""}`}>
+              <span className="dm-av" aria-hidden="true">{x.by.charAt(0)}</span>
+              <div>
+                <figcaption>{x.by}</figcaption>
+                <blockquote>{x.q}</blockquote>
+                <span className="dm-like" aria-hidden="true"><Heart /></span>
+              </div>
             </figure>
           ))}
         </div>
@@ -294,7 +292,7 @@ export default function Home() {
 
       {/* BOOK */}
       <section className="book" id="book">
-        <Head no="08 · Booking" title="Save the" accent="date." text="The coming week is fully booked. Pick an open day and send me your request, I'll confirm by email." />
+        <Head part="Part 8" top="Save the" big="date" text="The coming week is fully booked. Pick an open day and send your request, I'll confirm by email." />
         <Availability />
       </section>
 
@@ -302,10 +300,8 @@ export default function Home() {
       <section className="contact" id="contact">
         <div className="contact-in">
           <div className="contact-copy">
-            <Bow className="contact-bow" />
-            <p className="kicker light"><Heart /> 09 · Business inquiries</p>
-            <h2>Let&apos;s create something <em>lovely.</em></h2>
-            <p>Share the product, the goal and the timeline, and I&apos;ll get back to you with ideas.</p>
+            <Caption top="Let's make your" big="product" part="more memorable" />
+            <p>Add more value to your brand and support your business goals with content that feels real. Share the product, the goal and the timeline.</p>
             <a className="mail" href={`mailto:${EMAIL}`}>{EMAIL}</a>
             <Socials className="soc" />
           </div>
@@ -321,9 +317,9 @@ export default function Home() {
       </section>
 
       <footer className="foot">
-        <a href="#home" className="logo">{NAME}<Heart /></a>
+        <a href="#home" className="logo"><span className="logo-s">Dr.</span>Lamarya<Spark /></a>
         <Socials className="icons" />
-        <small>© {new Date().getFullYear()} {NAME} · made with love</small>
+        <small>© {new Date().getFullYear()} {NAME} · Contact me and start creating today</small>
       </footer>
 
       {lb !== null && gallery[lb] && (
@@ -337,7 +333,7 @@ export default function Home() {
           </>)}
         </div>
       )}
-      {reel && (
+      {reel && reel.id && (
         <div className="modal" role="dialog" aria-modal="true" aria-label={reel.title} onClick={() => setReel(null)}>
           <div className="frame" onClick={(e) => e.stopPropagation()}>
             <iframe src={`${igUrl(reel)}embed`} title={reel.title} allowFullScreen />
