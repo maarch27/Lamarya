@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   NAME, FIRST_NAME, ROLE, BASED, NICHES, EMAIL, INSTAGRAM, SOCIAL, PHOTOS, HEADLINE, BADGES, STATS,
   ABOUT_TITLE, ABOUT_TEXT, SKILLS, NOTES, NOTES_TITLE, CATS, REELS, BRANDS, SERVICES, STEPS, QUOTES,
-  PROJECT_TYPES, HIGHLIGHTS, type Cat, type Reel, type SocialIcon,
+  PROJECT_TYPES, HIGHLIGHTS, GALLERY_ORDER, type Cat, type Reel, type SocialIcon,
 } from "./content";
 
 const P = (n: string) => "/image/" + encodeURIComponent(n);
@@ -120,7 +120,8 @@ export default function Home() {
   }, [files.length, cat]);
 
   const used = new Set<string>([...PHOTOS.hero, PHOTOS.about, ...PHOTOS.notes, ...REELS.map((r) => r.cover ?? "")].filter(Boolean));
-  const gallery = files.filter((n) => !used.has(n));
+  const rest = files.filter((n) => !used.has(n));
+  const gallery = [...GALLERY_ORDER.filter((n) => rest.includes(n)), ...rest.filter((n) => !GALLERY_ORDER.includes(n))];
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
@@ -170,8 +171,8 @@ export default function Home() {
           </div>
           <div className="story main">
             <Bars n={3} active={1} />
-            <span className="story-user"><span className="av"><Photo src={PHOTOS.hero[2]} alt="" eager /></span>dr.lamarya <small>· Paris</small></span>
-            <Photo src={PHOTOS.hero[0]} alt={`${FIRST_NAME}, ${ROLE}`} eager pos="center 30%" />
+            <span className="story-user"><span className="av"><Photo src={PHOTOS.hero[2]} alt="" eager pos="center 30%" /></span>dr.lamarya <small>· Paris</small></span>
+            <Photo src={PHOTOS.hero[0]} alt={`${FIRST_NAME}, ${ROLE}`} eager pos="72% 30%" />
             <span className="story-cap"><span className="cap-top">Glow up with</span><span className="cap-big">your brand</span></span>
           </div>
           <span className="chip c1"><Heart /> {BADGES[0]}</span>

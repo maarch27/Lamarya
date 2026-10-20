@@ -25,10 +25,18 @@ export const SOCIAL: { name: string; icon: SocialIcon; url: string }[] = [
    below (or as a video cover) appears in the scrapbook gallery.
    --------------------------------------------------------------------- */
 export const PHOTOS = {
-  hero: ["black-dress.jpg", "red-tennis-dress.jpg", "eiffel-sunset.jpg"], // big one first
+  hero: ["red-dress-gazebo.jpg", "velvet-crosswalk.jpg", "gadget-closeup.jpg"], // main story, photo behind it, round avatar
   about: "floral-dress-stairs.jpg",
-  notes: ["eiffel-glasses.jpg", "golden-hour.jpg"],
+  notes: ["red-dress-scarf.jpg", "eiffel-night.jpg"],
 };
+
+// Photo dump order: these come first, any other photo in public/image follows
+export const GALLERY_ORDER = [
+  "red-dress-perfume.jpg", "racecourse-white.jpg", "striped-gown.jpg", "satin-dress-fountain.jpg",
+  "pom-peche-mirror.jpg", "w-concept-paris.jpg", "nails-eiffel.jpg", "suede-shoes-grass.jpg",
+  "sporty-visor.jpg", "plane-travel.jpg", "skincare-fation.jpg", "swimwear-collage.jpg",
+  "black-dress.jpg", "red-tennis-dress.jpg", "eiffel-sunset.jpg",
+];
 
 
 
@@ -121,10 +129,11 @@ export const PROJECT_TYPES = ["UGC video ad", "UGC photos", "Reel or Story", "Un
 
 // Story-highlight circles under the hero (label, photo, section link)
 export const HIGHLIGHTS: [string, string, string][] = [
-  ["About me", "floral-dress-stairs.jpg", "#about"],
+  ["About me", "gadget-closeup.jpg", "#about"],
   ["Glow up", "v-summer-glow-2.jpg", "#work"],
-  ["Paris", "eiffel-portrait.jpg", "#gallery"],
-  ["Brands", "v-jjs-house.jpg", "#brands"],
-  ["Reviews", "glasses-selfie.jpg", "#love"],
-  ["Book me", "golden-hour.jpg", "#book"],
+  ["Paris", "eiffel-night.jpg", "#gallery"],
+  ["Travel", "plane-travel.jpg", "#gallery"],
+  ["Brands", "pom-peche-mirror.jpg", "#brands"],
+  ["Reviews", "red-dress-perfume.jpg", "#love"],
+  ["Book me", "racecourse-white.jpg", "#book"],
 ];
