@@ -10,7 +10,7 @@ export const ROLE = "UGC creator · Lifestyle";
 export const BASED = "Paris & USA · Your local Paris guide";
 export const NICHES = ["Beauty", "Fashion", "Health", "Travel", "Tech"];
 export const LINKTREE = "https://linktr.ee/Dr.lamarya";
-export const EMAIL = "collaboration@drlamarya.com";
+export const EMAIL = "dr.lamarya@gmail.com"; // inquiries from the form arrive here
 export const INSTAGRAM = "https://www.instagram.com/dr.lamarya/";
 
 export type SocialIcon = "ig" | "tt" | "yt" | "pin" | "mail";

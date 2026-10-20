@@ -73,8 +73,20 @@ function Socials({ className }: { className: string }) {
   );
 }
 
+/* Sends the inquiry straight to her inbox through FormSubmit (free, no account).
+   The very first message triggers an "Activate form" email to EMAIL: click it once. */
+async function sendInquiry(fields: Record<string, string>, subject: string) {
+  const r = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields["Email"], _template: "table", _captcha: "false" }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || String(j.success) !== "true") throw new Error(j.message || "Could not send");
+}
+
 /* Next 14 days: the coming week always shows as booked. */
-function Availability() {
+function Availability({ onPick }: { onPick: (day: string) => void }) {
   const [days, setDays] = useState<{ w: string; d: string; m: string; booked: boolean; today: boolean; full: string }[]>([]);
   useEffect(() => {
     setDays(Array.from({ length: 14 }, (_, i) => {
@@ -89,7 +101,7 @@ function Availability() {
     <div className="cal" aria-label="Availability for the next two weeks">
       {days.map((x) => x.booked
         ? <div className="day booked" key={x.full} aria-label={`${x.full}, fully booked`}><span>{x.today ? "Today" : x.w}</span><b>{x.d}</b><small>{x.m}</small><i>booked</i></div>
-        : <a className="day open" key={x.full} href={`mailto:${EMAIL}?subject=${encodeURIComponent("Booking request: " + x.full)}`}><span>{x.w}</span><b>{x.d}</b><small>{x.m}</small><i>request</i></a>)}
+        : <button type="button" className="day open" key={x.full} onClick={() => onPick(x.full)} aria-label={`Request ${x.full}`}><span>{x.w}</span><b>{x.d}</b><small>{x.m}</small><i>request</i></button>)}
     </div>
   );
 }
@@ -103,7 +115,9 @@ export default function Home() {
   const [reel, setReel] = useState<Reel | null>(null);
   const [lb, setLb] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
-  const [f, setF] = useState({ name: "", email: "", brand: "", type: PROJECT_TYPES[0], details: "" });
+  const blank = { name: "", email: "", brand: "", type: PROJECT_TYPES[0], date: "", details: "" };
+  const [f, setF] = useState(blank);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   useEffect(() => {
     fetch("/image/index.json").then((r) => (r.ok ? r.json() : [])).then((j) => Array.isArray(j) && setFiles(j)).catch(() => {});
@@ -133,10 +147,25 @@ export default function Home() {
   }, [gallery.length]);
 
   const world = REELS.filter((r) => r.cat === cat);
-  const send = (e: React.SyntheticEvent) => {
+  const send = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const body = `Name: ${f.name}\nEmail: ${f.email}\nBrand / company: ${f.brand}\nProject type: ${f.type}\n\nProject details:\n${f.details}`;
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Collaboration enquiry: " + f.brand)}&body=${encodeURIComponent(body)}`;
+    if (status === "sending") return;
+    setStatus("sending");
+    try {
+      await sendInquiry(
+        { Name: f.name, Email: f.email, "Brand / company": f.brand, "Project type": f.type, "Preferred date": f.date || "Flexible", "Project details": f.details },
+        `New collaboration inquiry: ${f.brand}`,
+      );
+      setStatus("sent");
+      setF(blank);
+    } catch {
+      setStatus("error");
+    }
+  };
+  const pickDay = (day: string) => {
+    setF((v) => ({ ...v, date: day }));
+    setStatus("idle");
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
   };
   const nav: [string, string][] = [["#about", "About"], ["#work", "Work"], ["#services", "Services"], ["#love", "Reviews"], ["#book", "Book"]];
 
@@ -294,7 +323,7 @@ export default function Home() {
       {/* BOOK */}
       <section className="book" id="book">
         <Head part="Part 8" top="Save the" big="date" text="The coming week is fully booked. Pick an open day and send your request, I'll confirm by email." />
-        <Availability />
+        <Availability onPick={pickDay} />
       </section>
 
       {/* CONTACT */}
@@ -311,8 +340,11 @@ export default function Home() {
             <label>Email<input required type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} autoComplete="email" /></label>
             <label>Brand or company<input required value={f.brand} onChange={(e) => setF({ ...f, brand: e.target.value })} autoComplete="organization" /></label>
             <label>Project type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>{PROJECT_TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
+            <label>Preferred date<input value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} placeholder="Pick a day in the calendar or write one" /></label>
             <label>Project details<textarea required rows={4} value={f.details} onChange={(e) => setF({ ...f, details: e.target.value })} placeholder="Product, goal, timeline, usage rights…" /></label>
-            <button className="btn light" type="submit">Send my inquiry</button>
+            <button className="btn light" type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Send my inquiry"}</button>
+            {status === "sent" && <p className="fmsg ok" role="status">Thank you! Your inquiry was sent, I&apos;ll get back to you soon ♥</p>}
+            {status === "error" && <p className="fmsg err" role="alert">Sorry, it didn&apos;t go through. Please email me directly at <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>}
           </form>
         </div>
       </section>

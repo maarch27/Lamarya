@@ -307,3 +307,11 @@ h3{font-size:clamp(1.2rem,2vw,1.45rem)}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .js .rv{opacity:1;transform:none}
 }
+
+/* inquiry form status */
+.form button[disabled]{opacity:.6;cursor:wait}
+.fmsg{font-size:.92rem;padding:12px 16px;border-radius:16px;margin:0}
+.fmsg.ok{background:var(--pink);color:var(--bur);font-weight:600}
+.fmsg.err{background:rgba(253,238,241,.1);color:var(--pink-l);border:1px solid rgba(253,238,241,.3)}
+.fmsg a{text-decoration:underline}
+button.day{font:inherit;cursor:pointer;border:0}
