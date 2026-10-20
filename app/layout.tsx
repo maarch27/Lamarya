@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { NAME, ROLE } from "./content";
+import { NAME } from "./content";
 
 export const metadata: Metadata = {
-  title: `${NAME} | ${ROLE}`,
-  description: `${NAME}, ${ROLE.toLowerCase()}. See selected campaigns and send a brand collaboration inquiry.`,
-  openGraph: { title: `${NAME} | ${ROLE}`, description: "Soft, real content for brands.", type: "website" },
+  title: `${NAME} ♡ UGC creator in Paris`,
+  description: "Hi, I'm Lamara! I film cozy, honest UGC videos and photos for beauty, fashion, health, travel and tech brands.",
+  openGraph: { title: `${NAME} ♡ UGC creator in Paris`, description: "Soft, real content for brands.", type: "website" },
 };
 
 export const viewport: Viewport = { themeColor: "#f9d9df" };

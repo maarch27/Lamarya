@@ -1,61 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  NAME, FIRST_NAME, ROLE, BASED, NICHES, EMAIL, INSTAGRAM, SOCIAL, PHOTOS, HEADLINE, BADGES, STATS,
-  ABOUT_TITLE, ABOUT_TEXT, SKILLS, NOTES, NOTES_TITLE, CATS, REELS, BRANDS, SERVICES, STEPS, QUOTES,
-  PROJECT_TYPES, HIGHLIGHTS, GALLERY_ORDER, type Cat, type Reel, type SocialIcon,
+  NAME, FIRST_NAME, EMAIL, INSTAGRAM, SOCIAL, PHOTOS, GALLERY_ORDER, HERO, ABOUT, STATS, WHY, CATS, REELS,
+  BRAND_COUNT, BRAND_LOGOS, SERVICES, STEPS, QUOTES, PROJECT_TYPES, HIGHLIGHTS,
+  type Cat, type Reel, type SocialIcon,
 } from "./content";
 
 const P = (n: string) => "/image/" + encodeURIComponent(n);
 const igUrl = (r: Reel) => `https://www.instagram.com/${r.type === "p" ? "p" : "reel"}/${r.id}/`;
 
 /* =====================================================================
-   SMALL PIECES
+   LITTLE PIECES
    ===================================================================== */
-function Photo({ src, alt, pos, eager, label = "photo coming" }: { src?: string; alt: string; pos?: string; eager?: boolean; label?: string }) {
+function Photo({ src, alt, pos, eager }: { src?: string; alt: string; pos?: string; eager?: boolean }) {
   const [bad, setBad] = useState(false);
-  if (!src || bad) return <span className="ph" role="img" aria-label={alt}><Heart /><span>{label}</span></span>;
+  if (!src || bad) return <span className="ph" role="img" aria-label={alt}>♡</span>;
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={P(src)} alt={alt} style={pos ? { objectPosition: pos } : undefined} loading={eager ? "eager" : "lazy"} onError={() => setBad(true)} />;
 }
 
-function Heart({ className = "" }: { className?: string }) {
-  return <svg className={`heart ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.1 4c2 0 3.6 1.1 4.9 2.9C13.3 5.1 14.9 4 16.9 4c3.5 0 5.7 3.6 4.4 7.1-1.8 4.8-9.3 9.4-9.3 9.4z" /></svg>;
-}
+const Heart = ({ className = "" }: { className?: string }) => (
+  <svg className={`heart ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.1 4c2 0 3.6 1.1 4.9 2.9C13.3 5.1 14.9 4 16.9 4c3.5 0 5.7 3.6 4.4 7.1-1.8 4.8-9.3 9.4-9.3 9.4z" /></svg>
+);
 
-function Spark({ className = "" }: { className?: string }) {
-  return <svg className={`spark ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5.6 4.9 9.9 10.5 10.5-5.6.6-9.9 4.9-10.5 10.5C11.4 16.9 7.1 12.6 1.5 12 7.1 11.4 11.4 7.1 12 1.5z" /></svg>;
-}
+const Bow = ({ className = "" }: { className?: string }) => (
+  <svg className={`bow ${className}`} viewBox="0 0 120 80" aria-hidden="true">
+    <path d="M60 36C46 14 16 6 10 20c-5 12 14 26 50 22z" /><path d="M60 36C74 14 104 6 110 20c5 12-14 26-50 22z" />
+    <path d="M56 42c-6 14-14 26-22 36l12-2 5 6c6-12 9-26 9-38z" /><path d="M64 42c6 14 14 26 22 36l-12-2-5 6c-6-12-9-26-9-38z" />
+    <ellipse cx="60" cy="39" rx="9" ry="8" />
+  </svg>
+);
 
-/* A caption written the way she writes on her reels:
-   handwritten line on top, big bold caps, italic "part" underneath. */
-function Caption({ top, big, part, as: Tag = "h2", className = "" }: { top?: string; big: string; part?: string; as?: "h1" | "h2" | "h3"; className?: string }) {
+const Sparkle = ({ className = "" }: { className?: string }) => (
+  <svg className={`sparkle ${className}`} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c.5 5 5 9.5 10 10-5 .5-9.5 5-10 10-.5-5-5-9.5-10-10 5-.5 9.5-5 10-10z" /></svg>
+);
+
+/* soft wavy edge between sections */
+const Wave = ({ className = "" }: { className?: string }) => (
+  <svg className={`wave ${className}`} viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 30C120 5 240 5 360 30s240 25 360 0 240-25 360 0 240 25 360 0V60H0z" />
+  </svg>
+);
+
+/* section title: handwritten tag + soft heading + squiggle */
+function Title({ tag, children, text }: { tag: string; children: React.ReactNode; text?: string }) {
   return (
-    <Tag className={`cap ${className}`}>
-      {top && <span className="cap-top">{top}</span>}
-      <span className="cap-big">{big}</span>
-      {part && <span className="cap-part">{part}</span>}
-    </Tag>
-  );
-}
-
-function Head({ part, top, big, text }: { part: string; top: string; big: string; text?: string }) {
-  return (
-    <div className="head rv">
-      <Caption top={top} big={big} part={part} />
-      {text && <p className="head-p">{text}</p>}
+    <div className="title rv">
+      <span className="tag">{tag}</span>
+      <h2>{children}</h2>
+      <svg className="squiggle" viewBox="0 0 160 14" aria-hidden="true"><path d="M2 8c10-8 20 8 30 0s20 8 30 0 20 8 30 0 20 8 30 0 20 8 30 0" /></svg>
+      {text && <p>{text}</p>}
     </div>
   );
 }
 
-/* Story progress bars, like the top of an Instagram story */
-function Bars({ n = 3, active = 0 }: { n?: number; active?: number }) {
-  return <span className="bars" aria-hidden="true">{Array.from({ length: n }, (_, i) => <i key={i} className={i < active ? "done" : i === active ? "now" : ""} />)}</span>;
-}
-
 function Icon({ name }: { name: SocialIcon }) {
-  const q = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
+  const q = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
   if (name === "ig") return <svg {...q}><rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.3" cy="6.7" r=".6" fill="currentColor" /></svg>;
   if (name === "tt") return <svg {...q}><path d="M14 3v11.2a3.7 3.7 0 1 1-3.7-3.7" /><path d="M14 3c.4 2.6 2 4.3 4.8 4.6" /></svg>;
   if (name === "yt") return <svg {...q}><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" /></svg>;
@@ -63,19 +64,9 @@ function Icon({ name }: { name: SocialIcon }) {
   return <svg {...q}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3.5 7l8.5 6.2L20.5 7" /></svg>;
 }
 
-function Socials({ className }: { className: string }) {
-  return (
-    <ul className={className}>
-      {SOCIAL.map((s) => (
-        <li key={s.name}><a href={s.url} target={s.icon === "mail" ? undefined : "_blank"} rel="noreferrer" aria-label={s.name}><Icon name={s.icon} /><span>{s.name}</span></a></li>
-      ))}
-    </ul>
-  );
-}
-
-/* Sends the inquiry straight to her inbox through FormSubmit (free, no account).
+/* Sends the letter straight to her Gmail through FormSubmit (free, no account).
    The very first message triggers an "Activate form" email to EMAIL: click it once. */
-async function sendInquiry(fields: Record<string, string>, subject: string) {
+async function sendLetter(fields: Record<string, string>, subject: string) {
   const r = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -85,23 +76,82 @@ async function sendInquiry(fields: Record<string, string>, subject: string) {
   if (!r.ok || String(j.success) !== "true") throw new Error(j.message || "Could not send");
 }
 
-/* Next 14 days: the coming week always shows as booked. */
-function Availability({ onPick }: { onPick: (day: string) => void }) {
-  const [days, setDays] = useState<{ w: string; d: string; m: string; booked: boolean; today: boolean; full: string }[]>([]);
-  useEffect(() => {
-    setDays(Array.from({ length: 14 }, (_, i) => {
-      const x = new Date(); x.setDate(x.getDate() + i);
-      return {
-        w: x.toLocaleDateString("en-GB", { weekday: "short" }), d: String(x.getDate()), m: x.toLocaleDateString("en-GB", { month: "short" }),
-        booked: i < 7, today: i === 0, full: x.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }),
-      };
-    }));
-  }, []);
+/* =====================================================================
+   DAY STRIP (her booking calendar)
+   3 weeks of little day cards you can swipe. Open days are random but
+   only change once a day; today and tomorrow are always full.
+   ===================================================================== */
+const TIMES: [string, string][] = [["11:00", "morning"], ["14:00", "afternoon"], ["16:30", "golden hour"]];
+type StripDay = { key: string; w: string; d: number; m: string; full: string; open: boolean; times: boolean[] };
+
+function rng(seed: number) {
+  let n = seed | 0;
+  return () => {
+    n = (n + 0x6d2b79f5) | 0;
+    let t = Math.imul(n ^ (n >>> 15), 1 | n);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildStrip(): StripDay[] {
+  const now = new Date();
+  const rnd = rng(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate() + 7);
+  const days = Array.from({ length: 21 }, (_, i) => {
+    const x = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const open = i > 1 && rnd() < 0.45;
+    const times = TIMES.map(() => open && rnd() < 0.6);
+    if (open && !times.some(Boolean)) times[1] = true;
+    return {
+      key: x.toDateString(), d: x.getDate(), open, times,
+      w: i === 0 ? "today" : i === 1 ? "tomorrow" : x.toLocaleDateString("en-GB", { weekday: "short" }).toLowerCase(),
+      m: x.toLocaleDateString("en-GB", { month: "short" }).toLowerCase(),
+      full: x.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }),
+    };
+  });
+  for (let i = days.length - 1, n = days.filter((x) => x.open).length; n < 6 && i > 1; i--) {
+    if (!days[i].open) { days[i].open = true; days[i].times = [false, true, false]; n++; }
+  }
+  return days;
+}
+
+function DayStrip({ onPick }: { onPick: (when: string) => void }) {
+  const [days, setDays] = useState<StripDay[]>([]);
+  const [sel, setSel] = useState("");
+  const [time, setTime] = useState("");
+  const strip = useRef<HTMLDivElement>(null);
+  useEffect(() => { setDays(buildStrip()); }, []);
+  const cur = days.find((x) => x.key === sel);
+  const nudge = (dir: number) => strip.current?.scrollBy({ left: dir * strip.current.clientWidth * 0.8, behavior: "smooth" });
   return (
-    <div className="cal" aria-label="Availability for the next two weeks">
-      {days.map((x) => x.booked
-        ? <div className="day booked" key={x.full} aria-label={`${x.full}, fully booked`}><span>{x.today ? "Today" : x.w}</span><b>{x.d}</b><small>{x.m}</small><i>booked</i></div>
-        : <button type="button" className="day open" key={x.full} onClick={() => onPick(x.full)} aria-label={`Request ${x.full}`}><span>{x.w}</span><b>{x.d}</b><small>{x.m}</small><i>request</i></button>)}
+    <div className="strip-wrap rv">
+      <div className="strip-nav">
+        <button type="button" onClick={() => nudge(-1)} aria-label="Earlier days">‹</button>
+        <span>swipe for more days</span>
+        <button type="button" onClick={() => nudge(1)} aria-label="Later days">›</button>
+      </div>
+      <div className="strip" ref={strip}>
+        {days.map((x) => x.open
+          ? <button key={x.key} type="button" className={`dc open${sel === x.key ? " on" : ""}`} aria-pressed={sel === x.key} aria-label={`${x.full}, available`} onClick={() => { setSel(x.key); setTime(""); }}>
+              <span className="dc-w">{x.w}</span><b>{x.d}</b><span className="dc-m">{x.m}</span><i><Heart /> open</i>
+            </button>
+          : <div key={x.key} className="dc full" aria-label={`${x.full}, fully booked`}>
+              <span className="dc-w">{x.w}</span><b>{x.d}</b><span className="dc-m">{x.m}</span><i>full</i>
+            </div>)}
+      </div>
+      <div className="times" aria-live="polite">
+        {cur ? (<>
+          <p>what time works for you on <b>{cur.full}</b>? <small>(Paris time)</small></p>
+          <div>
+            {TIMES.map(([t, label], k) => cur.times[k] && (
+              <button key={t} type="button" className={time === t ? "on" : ""} onClick={() => { setTime(t); onPick(`${cur.full} at ${t} (Paris time)`); }}>
+                <b>{t}</b><span>{label}</span>
+              </button>
+            ))}
+          </div>
+          {time && <p className="picked">lovely, I added it to your letter below ♡</p>}
+        </>) : <p>tap a day with a little heart to see the times ♡</p>}
+      </div>
     </div>
   );
 }
@@ -109,21 +159,21 @@ function Availability({ onPick }: { onPick: (day: string) => void }) {
 /* =====================================================================
    PAGE
    ===================================================================== */
+const BLANK = { name: "", brand: "", type: PROJECT_TYPES[0], date: "", email: "", idea: "" };
+
 export default function Home() {
   const [files, setFiles] = useState<string[]>([]);
   const [cat, setCat] = useState<Cat>(CATS[0]);
   const [reel, setReel] = useState<Reel | null>(null);
   const [lb, setLb] = useState<number | null>(null);
   const [menu, setMenu] = useState(false);
-  const blank = { name: "", email: "", brand: "", type: PROJECT_TYPES[0], date: "", details: "" };
-  const [f, setF] = useState(blank);
+  const [f, setF] = useState(BLANK);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   useEffect(() => {
     fetch("/image/index.json").then((r) => (r.ok ? r.json() : [])).then((j) => Array.isArray(j) && setFiles(j)).catch(() => {});
   }, []);
 
-  // gentle reveal on scroll
   useEffect(() => {
     document.documentElement.classList.add("js");
     const els = Array.from(document.querySelectorAll(".rv:not(.in)"));
@@ -133,7 +183,7 @@ export default function Home() {
     return () => io.disconnect();
   }, [files.length, cat]);
 
-  const used = new Set<string>([...PHOTOS.hero, PHOTOS.about, ...PHOTOS.notes, ...REELS.map((r) => r.cover ?? "")].filter(Boolean));
+  const used = new Set<string>([PHOTOS.heart, PHOTOS.oval, PHOTOS.ticket, PHOTOS.about, PHOTOS.letter, ...PHOTOS.why, ...REELS.map((r) => r.cover ?? "")].filter(Boolean));
   const rest = files.filter((n) => !used.has(n));
   const gallery = [...GALLERY_ORDER.filter((n) => rest.includes(n)), ...rest.filter((n) => !GALLERY_ORDER.includes(n))];
 
@@ -147,165 +197,198 @@ export default function Home() {
   }, [gallery.length]);
 
   const world = REELS.filter((r) => r.cat === cat);
+  const rows: [string, string][][] = [];
+  for (let i = 0; i < BRAND_LOGOS.length; i += 6) rows.push(BRAND_LOGOS.slice(i, i + 6));
+
+  const toLetter = () => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+  const pick = (when: string) => { setF((v) => ({ ...v, date: when })); setStatus("idle"); setTimeout(toLetter, 500); };
+  const askFor = (type: string) => { setF((v) => ({ ...v, type })); setStatus("idle"); toLetter(); };
+
   const send = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (status === "sending") return;
     setStatus("sending");
     try {
-      await sendInquiry(
-        { Name: f.name, Email: f.email, "Brand / company": f.brand, "Project type": f.type, "Preferred date": f.date || "Flexible", "Project details": f.details },
-        `New collaboration inquiry: ${f.brand}`,
+      await sendLetter(
+        { Name: f.name, Email: f.email, Brand: f.brand, "They would love": f.type, Date: f.date || "flexible", "The idea": f.idea },
+        `♡ New letter from ${f.brand || f.name}`,
       );
       setStatus("sent");
-      setF(blank);
+      setF(BLANK);
     } catch {
       setStatus("error");
     }
   };
-  const pickDay = (day: string) => {
-    setF((v) => ({ ...v, date: day }));
-    setStatus("idle");
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-  };
-  const nav: [string, string][] = [["#about", "About"], ["#work", "Work"], ["#services", "Services"], ["#love", "Reviews"], ["#book", "Book"]];
+
+  const nav: [string, string][] = [["#about", "about"], ["#work", "videos"], ["#brands", "brands"], ["#love", "love notes"], ["#book", "book"]];
 
   return (
     <main className="site">
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
+        <defs>
+          <clipPath id="clip-heart" clipPathUnits="objectBoundingBox">
+            <path d="M.5.97C.22.78 0 .58 0 .31 0 .13.14 0 .3 0 .4 0 .46.05.5.14.54.05.6 0 .7 0 .86 0 1 .13 1 .31 1 .58.78.78.5.97z" />
+          </clipPath>
+        </defs>
+      </svg>
+
       <header className="top">
-        <a href="#home" className="logo"><span className="logo-s">Dr.</span>Lamarya<Spark /></a>
-        <nav aria-label="Main" className={menu ? "open" : ""}>
-          {nav.map(([h, t]) => <a key={h} href={h} onClick={() => setMenu(false)}>{t}</a>)}
-        </nav>
-        <a className="pill" href="#contact">Collab with me</a>
-        <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><span /><span /></button>
+        <div className="top-pill">
+          <a href="#home" className="logo"><span>Dr.</span> Lamarya<Heart /></a>
+          <nav aria-label="Main" className={menu ? "open" : ""}>
+            {nav.map(([h, t]) => <a key={h} href={h} onClick={() => setMenu(false)}>{t}</a>)}
+          </nav>
+          <a className="say-hi" href="#contact">say hi <Heart /></a>
+          <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><span /><span /></button>
+        </div>
       </header>
 
-      {/* HERO */}
+      {/* FIRST SCREEN */}
       <section className="hero" id="home">
         <div className="hero-copy">
-          <p className="role">{ROLE}</p>
-          <Caption as="h1" top="Welcome to" big={NAME} part="your favorite creator" className="hero-cap" />
-          <p className="lede">{HEADLINE}</p>
-          <ul className="niches">{NICHES.map((n) => <li key={n}>{n}</li>)}</ul>
+          <p className="hello">{HERO.hello} <Heart /></p>
+          <h1><span className="h1-dr">Dr.</span> Lamarya</h1>
+          <p className="note">{HERO.note}</p>
+          <p className="lede">{HERO.text}</p>
+          <ul className="niches">{HERO.niches.map((n) => <li key={n}>{n}</li>)}</ul>
           <div className="actions">
-            <a className="btn" href="#contact">Let&apos;s collaborate</a>
-            <a className="btn ghost" href="#work">Watch my work</a>
+            <a className="btn" href="#contact">let&apos;s work together <Heart /></a>
+            <a className="btn soft" href="#work">see my videos</a>
           </div>
-          <p className="based"><span aria-hidden="true">📍</span> {BASED}</p>
+          <p className="place">📍 {HERO.place}</p>
         </div>
 
-        <div className="hero-art">
-          <div className="story back" aria-hidden="true">
-            <Photo src={PHOTOS.hero[1]} alt="" eager pos="center 25%" />
-          </div>
-          <div className="story main">
-            <Bars n={3} active={1} />
-            <span className="story-user"><span className="av"><Photo src={PHOTOS.hero[2]} alt="" eager pos="center 30%" /></span>dr.lamarya <small>· Paris</small></span>
-            <Photo src={PHOTOS.hero[0]} alt={`${FIRST_NAME}, ${ROLE}`} eager pos="72% 30%" />
-            <span className="story-cap"><span className="cap-top">Glow up with</span><span className="cap-big">your brand</span></span>
-          </div>
-          <span className="chip c1"><Heart /> {BADGES[0]}</span>
-          <span className="chip c2"><Spark /> {BADGES[1]}</span>
-          <Spark className="tw t1" /><Spark className="tw t2" /><Spark className="tw t3" />
+        <div className="hero-art" aria-label={`Photos of ${FIRST_NAME}`}>
+          <div className="heart-photo"><Photo src={PHOTOS.heart} alt={`${FIRST_NAME} in a red dress in Paris`} pos="66% 22%" eager /></div>
+          <div className="oval-photo"><Photo src={PHOTOS.oval} alt={`${FIRST_NAME} at night with the Eiffel Tower`} pos="50% 30%" eager /></div>
+          <div className="ticket-photo"><Photo src={PHOTOS.ticket} alt={`${FIRST_NAME} smiling`} pos="50% 35%" eager /><span>ugc ♡ paris</span></div>
+          <span className="status"><i /> {HERO.status}</span>
+          <Bow className="hero-bow" />
+          <Sparkle className="sp1" /><Sparkle className="sp2" /><Sparkle className="sp3" />
         </div>
       </section>
 
-      {/* HIGHLIGHTS */}
-      <nav className="highlights" aria-label="Highlights">
+      <nav className="bubbles" aria-label="Quick links">
         <ul>{HIGHLIGHTS.map(([t, img, href]) => (
-          <li key={t}><a href={href}><span className="ring"><span className="hl-img"><Photo src={img} alt="" pos="center 25%" /></span></span><span>{t}</span></a></li>
+          <li key={t}><a href={href}><span className="bub"><Photo src={img} alt="" pos="50% 25%" /></span><span>{t}</span></a></li>
         ))}</ul>
       </nav>
 
       {/* ABOUT */}
       <section className="about" id="about">
-        <div className="about-art rv">
-          <div className="frame-soft"><Photo src={PHOTOS.about} alt={`Portrait of ${FIRST_NAME}`} pos="center 30%" /></div>
-          <span className="tag-hand">{`that's me ✨`}</span>
-        </div>
-        <div className="about-copy rv">
-          <Caption top={ABOUT_TITLE} big={FIRST_NAME} part="Part 1 · about me" />
-          {ABOUT_TEXT.map((t) => <p key={t}>{t}</p>)}
-          <ul className="skills">{SKILLS.map((s) => <li key={s}>{s}</li>)}</ul>
-        </div>
-      </section>
-
-      <section className="stats" aria-label="In numbers">
-        <ul>{STATS.map(([v, l]) => <li key={l} className="rv"><b>{v}</b><span>{l}</span></li>)}</ul>
-      </section>
-
-      {/* WHY ME */}
-      <section className="why">
-        <Head part="Part 2" top={NOTES_TITLE[0]} big={NOTES_TITLE[1]} />
-        <div className="why-grid">
-          <div className="why-photos rv">
-            <div className="frame-soft w1"><Photo src={PHOTOS.notes[0]} alt={`${FIRST_NAME} in Paris`} /></div>
-            <div className="frame-soft w2"><Photo src={PHOTOS.notes[1]} alt={`${FIRST_NAME} at golden hour`} /></div>
+        <Wave className="w-pink-l" />
+        <div className="about-in">
+          <div className="about-art rv">
+            <Bow className="about-bow" />
+            <div className="egg"><Photo src={PHOTOS.about} alt={`${FIRST_NAME} in a floral dress on the Trocadéro steps`} pos="50% 35%" /></div>
+            <span className="handnote">that&apos;s me, in my favorite dress</span>
           </div>
-          <ol className="why-list">
-            {NOTES.map(([t, d], i) => <li key={t} className="rv"><span className="why-n">0{i + 1}</span><div><h3>{t}</h3><p>{d}</p></div></li>)}
-          </ol>
+          <div className="about-copy rv">
+            <span className="tag">nice to meet you</span>
+            <h2>{ABOUT.title}</h2>
+            {ABOUT.text.map((t) => <p key={t}>{t}</p>)}
+            <ul className="things">{ABOUT.things.map((t) => <li key={t}><Heart /> {t}</li>)}</ul>
+          </div>
+        </div>
+        <ul className="numbers">
+          {STATS.map(([v, l]) => <li key={l} className="rv"><b>{v}</b><span>{l}</span></li>)}
+        </ul>
+      </section>
+
+      {/* WHY */}
+      <section className="why">
+        <Title tag="the honest answer">why brands keep coming back</Title>
+        <div className="why-in">
+          <ul className="why-cards">
+            {WHY.map(([ic, t, d]) => <li key={t} className="rv"><span className="why-ic" aria-hidden="true">{ic}</span><div><h3>{t}</h3><p>{d}</p></div></li>)}
+          </ul>
+          <div className="why-photos rv">
+            <div className="pill-photo"><Photo src={PHOTOS.why[0]} alt={`${FIRST_NAME} in a red dress with a flowing scarf`} pos="55% 30%" /></div>
+            <div className="circle-photo"><Photo src={PHOTOS.why[1]} alt={`${FIRST_NAME} holding a perfume bottle`} pos="50% 30%" /></div>
+            <span className="why-note">red dress era ♡</span>
+          </div>
         </div>
       </section>
 
-      {/* WORK */}
+      {/* VIDEOS */}
       <section className="work" id="work">
-        <Head part="Part 3" top="Press play on" big="my edits" text="Hooks, storytelling and series that keep people watching: glow ups, try-ons, unboxings and before and afters." />
+        <Wave className="w-pink-m" />
+        <Title tag="press play" text="A few favorites: my glow up series, try-ons, unboxings and before & afters. Tap one to watch it on my Instagram.">my little videos</Title>
         <div className="tabs" role="tablist">
           {CATS.map((c) => <button key={c} role="tab" aria-selected={cat === c} className={cat === c ? "on" : ""} onClick={() => setCat(c)}>{c}</button>)}
         </div>
         <div className="reels" key={cat}>
-          {world.map((r, i) => {
+          {world.map((r) => {
             const inner = (<>
-              <span className="reel-img"><Photo src={r.cover} alt="" label={r.title} pos="center 30%" /></span>
-              <Bars n={Math.min(4, world.length)} active={Math.min(i, 3)} />
-              <span className="reel-play" aria-hidden="true">▶</span>
-              <span className="reel-t"><span className="cap-top">{r.cat}</span>{r.title}</span>
+              <span className="reel-img"><Photo src={r.cover} alt="" pos="50% 30%" /><span className="play" aria-hidden="true">▶</span></span>
+              <span className="reel-t">{r.title}</span>
             </>);
             return r.id
               ? <button key={r.title} className="reel" onClick={() => setReel(r)} aria-label={`Play ${r.title}`}>{inner}</button>
-              : <a key={r.title} className="reel" href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label={`${r.title}, see it on Instagram`}>{inner}</a>;
+              : <a key={r.title} className="reel" href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label={`${r.title}, watch on Instagram`}>{inner}</a>;
           })}
         </div>
       </section>
 
-      {/* GALLERY */}
+      {/* PHOTO DUMP */}
       <section className="gallery" id="gallery">
-        <Head part="Part 4" top="Photo dump," big="Paris edition" text="UGC photos from everyday moments at home to outdoor adventures. Tap one to see it bigger." />
+        <Title tag="camera roll" text="Some of my favorite UGC photos, from my little apartment to the streets of Paris. Tap one to see it bigger.">photo dump</Title>
         <div className="dump">
           {gallery.map((n, i) => (
-            <button key={n} className={`dp dp${i % 6}`} onClick={() => setLb(i)} aria-label="Open photo"><Photo src={n} alt={`${FIRST_NAME}, UGC photo`} /></button>
+            <button key={n} className={`dp s${i % 5}`} onClick={() => setLb(i)} aria-label="Open photo"><Photo src={n} alt={`${FIRST_NAME}, UGC photo`} /></button>
           ))}
         </div>
       </section>
 
-      {/* BRANDS */}
+      {/* BRANDS: charm bracelet */}
       <section className="brands" id="brands">
-        <Head part="Part 5" top="Trusted by" big="100+ brands" />
-        <ul className="brand-cloud">{BRANDS.map((b, i) => <li key={b} className={`rv b${i % 4}`}>{b}</li>)}</ul>
+        <Wave className="w-cream" />
+        <div className="brand-head rv">
+          <div className="big-bubble"><b>{BRAND_COUNT}</b><span>brands</span></div>
+          <div>
+            <span className="tag">my charm bracelet</span>
+            <h2>brands I&apos;ve loved working with</h2>
+            <p>Every brand I work with becomes a little charm on my bracelet. Here are just a few of them.</p>
+          </div>
+        </div>
+        <div className="bracelet">
+          {rows.map((row, r) => (
+            <div className="chain rv" key={r}>
+              <svg className="string" viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 Q150 36 300 18 T600 6" /></svg>
+              <ul>{row.map(([file, name], i) => (
+                <li key={file} className="charm" style={{ animationDelay: `${-((r * 6 + i) % 7) * 0.45}s` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/brands/${file}.png`} alt={name || "Brand partner logo"} loading="lazy" />
+                </li>
+              ))}</ul>
+            </div>
+          ))}
+          <p className="more rv"><Heart /> and so many more <Heart /></p>
+        </div>
       </section>
 
       {/* SERVICES */}
       <section className="services" id="services">
-        <Head part="Part 6" top="What I" big="create" text="Raw and edited content for ads, brand and organic use. Tell me your goal and I'll send a tailored quote." />
+        <Title tag="what I can make" text="Raw and edited content for your ads, your page or both. Tell me what you're dreaming of and I'll send you a little quote.">made just for you</Title>
         <ul className="svc">
           {SERVICES.map(([t, d], i) => (
             <li key={t} className="rv">
-              <span className="svc-n">{String(i + 1).padStart(2, "0")}</span>
+              <Heart className="svc-h" />
               <h3>{t}</h3><p>{d}</p>
-              <a href={`mailto:${EMAIL}?subject=${encodeURIComponent("Enquiry: " + t)}`}>Ask about this <Heart /></a>
+              <button type="button" onClick={() => askFor(PROJECT_TYPES[Math.min(i, PROJECT_TYPES.length - 1)])}>ask me about it →</button>
             </li>
           ))}
         </ul>
         <div className="steps rv">
-          <Caption as="h3" top="my" big="approach" />
+          <span className="tag">how it works</span>
           <ol>{STEPS.map(([t, d], i) => <li key={t}><b>{i + 1}</b><h4>{t}</h4><p>{d}</p></li>)}</ol>
         </div>
       </section>
 
-      {/* LOVE NOTES (as DMs) */}
+      {/* LOVE NOTES */}
       <section className="love" id="love">
-        <Head part="Part 7" top="What brands" big="tell me" text="Real messages from brands after we worked together." />
+        <Wave className="w-pink-l" />
+        <Title tag="yes, I screenshot them all" text="Real messages from brands after we worked together.">sweet messages</Title>
         <div className="dms">
           {QUOTES.map((x, i) => (
             <figure key={x.by} className={`dm rv ${i % 2 ? "r" : ""}`}>
@@ -322,37 +405,46 @@ export default function Home() {
 
       {/* BOOK */}
       <section className="book" id="book">
-        <Head part="Part 8" top="Save the" big="date" text="The coming week is fully booked. Pick an open day and send your request, I'll confirm by email." />
-        <Availability onPick={pickDay} />
+        <Title tag="my little planner" text="Today and tomorrow are already full, but here's what's open. Pick a day and a time and I'll add it to your letter.">pick a day to film</Title>
+        <DayStrip onPick={pick} />
       </section>
 
-      {/* CONTACT */}
+      {/* LAST PAGE: love letter */}
       <section className="contact" id="contact">
-        <div className="contact-in">
-          <div className="contact-copy">
-            <Caption top="Let's make your" big="product" part="more memorable" />
-            <p>Add more value to your brand and support your business goals with content that feels real. Share the product, the goal and the timeline.</p>
-            <a className="mail" href={`mailto:${EMAIL}`}>{EMAIL}</a>
-            <Socials className="soc" />
-          </div>
-          <form onSubmit={send} className="form">
-            <label>Your name<input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoComplete="name" /></label>
-            <label>Email<input required type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} autoComplete="email" /></label>
-            <label>Brand or company<input required value={f.brand} onChange={(e) => setF({ ...f, brand: e.target.value })} autoComplete="organization" /></label>
-            <label>Project type<select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>{PROJECT_TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
-            <label>Preferred date<input value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} placeholder="Pick a day in the calendar or write one" /></label>
-            <label>Project details<textarea required rows={4} value={f.details} onChange={(e) => setF({ ...f, details: e.target.value })} placeholder="Product, goal, timeline, usage rights…" /></label>
-            <button className="btn light" type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Send my inquiry"}</button>
-            {status === "sent" && <p className="fmsg ok" role="status">Thank you! Your inquiry was sent, I&apos;ll get back to you soon ♥</p>}
-            {status === "error" && <p className="fmsg err" role="alert">Sorry, it didn&apos;t go through. Please email me directly at <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>}
+        <Title tag="write me a little letter" text="Fill in the blanks and it lands straight in my inbox. I read every single one.">let&apos;s make something lovely</Title>
+        <div className="letter-wrap">
+          <form className="letter rv" onSubmit={send}>
+            <div className="stamp" aria-hidden="true"><Photo src={PHOTOS.letter} alt="" pos="50% 30%" /></div>
+            <p className="dear">Dear Lamara,</p>
+            <p className="lines">
+              my name is <input required aria-label="Your name" placeholder="your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoComplete="name" />
+              {" "}from <input required aria-label="Brand or company" placeholder="your brand" value={f.brand} onChange={(e) => setF({ ...f, brand: e.target.value })} autoComplete="organization" />
+              {" "}and we would love{" "}
+              <select aria-label="What you would love" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>{PROJECT_TYPES.map((t) => <option key={t}>{t}</option>)}</select>
+              {" "}from you, ideally on <input aria-label="Preferred date" className="wide" placeholder="a day from your planner" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />.
+              {" "}You can write back to me at <input required type="email" aria-label="Your email" className="wide" placeholder="your@email.com" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} autoComplete="email" />.
+            </p>
+            <label className="idea">here&apos;s our little idea:
+              <textarea required rows={4} value={f.idea} onChange={(e) => setF({ ...f, idea: e.target.value })} placeholder="the product, what you'd like people to feel, any dates or usage rights…" />
+            </label>
+            <p className="sign">with love, <b>{f.name || "you"}</b> <Heart /></p>
+            <button className="btn" type="submit" disabled={status === "sending"}>{status === "sending" ? "sending…" : <>send with love <Heart /></>}</button>
+            {status === "sent" && <p className="fmsg ok" role="status">yay, your letter is on its way! I&apos;ll write back very soon ♡</p>}
+            {status === "error" && <p className="fmsg err" role="alert">oh no, it didn&apos;t go through. You can email me at <a href={`mailto:${EMAIL}`}>{EMAIL}</a> ♡</p>}
           </form>
+          <aside className="or rv">
+            <p>or find me here</p>
+            <a className="mail" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+            <ul className="soc">{SOCIAL.filter((s) => s.icon !== "mail").map((s) => <li key={s.name}><a href={s.url} target="_blank" rel="noreferrer"><Icon name={s.icon} /> {s.name}</a></li>)}</ul>
+          </aside>
         </div>
       </section>
 
       <footer className="foot">
-        <a href="#home" className="logo"><span className="logo-s">Dr.</span>Lamarya<Spark /></a>
-        <Socials className="icons" />
-        <small>© {new Date().getFullYear()} {NAME} · Contact me and start creating today</small>
+        <Wave className="w-foot" />
+        <p className="bye">see you soon <Heart /></p>
+        <ul className="icons">{SOCIAL.map((s) => <li key={s.name}><a href={s.url} target={s.icon === "mail" ? undefined : "_blank"} rel="noreferrer" aria-label={s.name}><Icon name={s.icon} /></a></li>)}</ul>
+        <small>© {new Date().getFullYear()} {NAME} · made with love in Paris</small>
       </footer>
 
       {lb !== null && gallery[lb] && (
