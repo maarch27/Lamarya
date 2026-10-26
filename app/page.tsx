@@ -64,7 +64,7 @@ function Icon({ name }: { name: SocialIcon }) {
   return <svg {...q}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3.5 7l8.5 6.2L20.5 7" /></svg>;
 }
 
-/* Sends the letter straight to her Gmail through FormSubmit (free, no account).
+/* Sends the letter straight to her inbox through FormSubmit (free, no account).
    The very first message triggers an "Activate form" email to EMAIL: click it once. */
 async function sendLetter(fields: Record<string, string>, subject: string) {
   const r = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {

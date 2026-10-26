@@ -5,7 +5,7 @@
 
 export const NAME = "Dr. Lamarya";
 export const FIRST_NAME = "Lamara";
-export const EMAIL = "dr.lamarya@gmail.com"; // messages from the love-letter form arrive here
+export const EMAIL = "collaboration@drlamarya.com"; // messages from the love-letter form arrive here
 export const INSTAGRAM = "https://www.instagram.com/dr.lamarya/";
 export const TIKTOK = "https://www.tiktok.com/@lamarya.ugc";
 
