@@ -70,7 +70,7 @@ async function sendLetter(fields: Record<string, string>, subject: string) {
   const r = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields["Email"], _template: "table", _captcha: "false" }),
+    body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields["email"], _template: "table", _captcha: "false" }),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || String(j.success) !== "true") throw new Error(j.message || "Could not send");
@@ -214,7 +214,7 @@ export default function Home() {
     setStatus("sending");
     try {
       await sendLetter(
-        { Name: f.name, Email: f.email, Brand: f.brand, "They would love": f.type, Date: f.date || "flexible", "The idea": f.idea },
+        { Name: f.name, email: f.email, Brand: f.brand, "They would love": f.type, Date: f.date || "flexible", "The idea": f.idea },
         `♡ New letter from ${f.brand || f.name}`,
       );
       setStatus("sent");
