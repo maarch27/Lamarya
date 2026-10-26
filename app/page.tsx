@@ -64,16 +64,17 @@ function Icon({ name }: { name: SocialIcon }) {
   return <svg {...q}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3.5 7l8.5 6.2L20.5 7" /></svg>;
 }
 
-/* Sends the letter straight to her inbox through FormSubmit (free, no account).
-   The very first message triggers an "Activate form" email to EMAIL: click it once. */
-async function sendLetter(fields: Record<string, string>, subject: string) {
-  const r = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields["Email"], _template: "table", _captcha: "false" }),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || String(j.success) !== "true") throw new Error(j.message || "Could not send");
+/* The form opens the visitor's own email app with everything filled in,
+   so the message comes from their real address and you can simply hit Reply. */
+function mailBody(fields: Record<string, string>) {
+  return Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join("\n");
+}
+function mailLinks(to: string, subject: string, fields: Record<string, string>) {
+  const su = encodeURIComponent(subject), body = encodeURIComponent(mailBody(fields));
+  return {
+    app: `mailto:${to}?subject=${su}&body=${body}`,
+    gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${su}&body=${body}`,
+  };
 }
 
 /* =====================================================================
@@ -208,20 +209,12 @@ export default function Home() {
   const pick = (when: string) => { setF((v) => ({ ...v, date: when })); setStatus("idle"); setTimeout(toLetter, 500); };
   const askFor = (type: string) => { setF((v) => ({ ...v, type })); setStatus("idle"); toLetter(); };
 
-  const send = async (e: React.SyntheticEvent) => {
+  const letter = () => mailLinks(EMAIL, `♡ New letter from ${f.brand || f.name}`,
+    { Name: f.name, Email: f.email, Brand: f.brand, "They would love": f.type, Date: f.date || "flexible", "The idea": f.idea });
+  const send = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (status === "sending") return;
-    setStatus("sending");
-    try {
-      await sendLetter(
-        { Name: f.name, Email: f.email, Brand: f.brand, "They would love": f.type, Date: f.date || "flexible", "The idea": f.idea },
-        `♡ New letter from ${f.brand || f.name}`,
-      );
-      setStatus("sent");
-      setF(BLANK);
-    } catch {
-      setStatus("error");
-    }
+    window.location.href = letter().app;
+    setStatus("sent");
   };
 
   const nav: [string, string][] = [["#about", "about"], ["#work", "videos"], ["#brands", "brands"], ["#love", "love notes"], ["#book", "book"]];
@@ -432,9 +425,8 @@ export default function Home() {
               <textarea required rows={4} value={f.idea} onChange={(e) => setF({ ...f, idea: e.target.value })} placeholder="the product, what you'd like people to feel, any dates or usage rights…" />
             </label>
             <p className="sign">with love, <b>{f.name || "you"}</b> <Heart /></p>
-            <button className="btn" type="submit" disabled={status === "sending"}>{status === "sending" ? "sending…" : <>send with love <Heart /></>}</button>
-            {status === "sent" && <p className="fmsg ok" role="status">yay, your letter is on its way! I&apos;ll write back very soon ♡</p>}
-            {status === "error" && <p className="fmsg err" role="alert">oh no, it didn&apos;t go through. You can email me at <a href={`mailto:${EMAIL}`}>{EMAIL}</a> ♡</p>}
+            <button className="btn" type="submit">send with love <Heart /></button>
+            {status === "sent" && <p className="fmsg ok" role="status">your email just opened with your letter inside, press send there and it&apos;s on its way ♡ Nothing opened? <a href={letter().gmail} target="_blank" rel="noreferrer">send it with Gmail</a> or write to <a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>}
           </form>
           <aside className="or rv">
             <p>or find me here</p>
