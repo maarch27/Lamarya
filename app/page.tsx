@@ -78,10 +78,13 @@ async function sendLetter(fields: Record<string, string>, subject: string) {
 
 /* =====================================================================
    DAY STRIP (her booking calendar)
-   3 weeks of little day cards you can swipe. Open days are random but
-   only change once a day; today and tomorrow are always full.
+   3 weeks of little day cards you can swipe. Today is always skipped,
+   tomorrow is open in the morning only (until 12:00), and every day after
+   that is open with 2-3 times. The times change once a day, the same for
+   every visitor.
    ===================================================================== */
-const TIMES: [string, string][] = [["11:00", "morning"], ["14:00", "afternoon"], ["16:30", "golden hour"]];
+const TIMES: [string, string][] = [["10:00", "morning"], ["12:00", "midday"], ["14:00", "afternoon"], ["16:30", "golden hour"]];
+const MORNING = TIMES.map(([t]) => t <= "12:00");
 type StripDay = { key: string; w: string; d: number; m: string; full: string; open: boolean; times: boolean[] };
 
 function rng(seed: number) {
@@ -96,23 +99,24 @@ function rng(seed: number) {
 
 function buildStrip(): StripDay[] {
   const now = new Date();
-  const rnd = rng(now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate() + 7);
-  const days = Array.from({ length: 21 }, (_, i) => {
+  return Array.from({ length: 21 }, (_, i) => {
     const x = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    const open = i > 1 && rnd() < 0.45;
-    const times = TIMES.map(() => open && rnd() < 0.6);
-    if (open && !times.some(Boolean)) times[1] = true;
+    const rnd = rng(x.getFullYear() * 10000 + (x.getMonth() + 1) * 100 + x.getDate() + 7);
+    let times: boolean[];
+    if (i === 0) times = TIMES.map(() => false);
+    else if (i === 1) times = MORNING;
+    else {
+      const keep = 2 + (rnd() < 0.5 ? 1 : 0);
+      const order = TIMES.map((_, k) => ({ k, r: rnd() })).sort((a, b) => a.r - b.r).slice(0, keep).map((o) => o.k);
+      times = TIMES.map((_, k) => order.includes(k));
+    }
     return {
-      key: x.toDateString(), d: x.getDate(), open, times,
+      key: x.toDateString(), d: x.getDate(), open: times.some(Boolean), times,
       w: i === 0 ? "today" : i === 1 ? "tomorrow" : x.toLocaleDateString("en-GB", { weekday: "short" }).toLowerCase(),
       m: x.toLocaleDateString("en-GB", { month: "short" }).toLowerCase(),
       full: x.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }),
     };
   });
-  for (let i = days.length - 1, n = days.filter((x) => x.open).length; n < 6 && i > 1; i--) {
-    if (!days[i].open) { days[i].open = true; days[i].times = [false, true, false]; n++; }
-  }
-  return days;
 }
 
 function DayStrip({ onPick }: { onPick: (when: string) => void }) {
@@ -405,7 +409,7 @@ export default function Home() {
 
       {/* BOOK */}
       <section className="book" id="book">
-        <Title tag="my little planner" text="Today and tomorrow are already full, but here's what's open. Pick a day and a time and I'll add it to your letter.">pick a day to film</Title>
+        <Title tag="my little planner" text="Today is already full, but almost every other day is open. Pick a day and a time and I'll add it to your letter.">pick a day to film</Title>
         <DayStrip onPick={pick} />
       </section>
 
